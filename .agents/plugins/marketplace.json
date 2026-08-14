@@ -1,0 +1,20 @@
+{
+  "name": "ikifuse-custom-toolset",
+  "interface": {
+    "displayName": "ikifuse Custom Toolset"
+  },
+  "plugins": [
+    {
+      "name": "evidence-first",
+      "source": {
+        "source": "local",
+        "path": "./plugins/evidence-first"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
