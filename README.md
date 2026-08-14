@@ -28,7 +28,7 @@ AI協働開発で繰り返し使うプラグイン、スキル、ルーティン
 
 | 種類 | 名前 | 目的 | 元の履歴 |
 | --- | --- | --- | --- |
-| Codexプラグイン | [evidence-first](plugins/evidence-first/) | 「確認」を必要な証拠範囲まで調査する | [ikifuse/evidence-first](https://github.com/ikifuse/evidence-first) |
+| Codexプラグイン | [evidence-first](plugins/evidence-first/README.md) | 「確認」を必要な証拠範囲まで調査する | [ikifuse/evidence-first](https://github.com/ikifuse/evidence-first) |
 
 ## 全体構成
 
