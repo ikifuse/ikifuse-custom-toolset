@@ -1,0 +1,25 @@
+{
+  "name": "evidence-first",
+  "version": "0.1.1",
+  "description": "ChatGPTとCodex向けの、証拠に基づく確認・実質調査・報告ワークフロー。",
+  "author": {
+    "name": "ikifuse"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Evidence First",
+    "shortDescription": "必要な証拠を調べ、事実・推論・未確認事項を分けて報告します。",
+    "longDescription": "依頼された結論に必要な範囲まで調査し、確認済み事実、推論、矛盾、未確認事項を区別して、証拠の充足状況とともに報告します。",
+    "developerName": "ikifuse",
+    "category": "Productivity",
+    "capabilities": [
+      "分析",
+      "読み取り専用の実質調査"
+    ],
+    "defaultPrompt": [
+      "この依頼を実質調査し、確認済み事実・推論・矛盾・未確認事項を分けて報告してください。",
+      "この対象を安全に削除できるか、必要な証拠範囲を調べて報告してください。",
+      "現在の成果物・履歴・公式情報を照合し、この報告内容を検証してください。"
+    ]
+  }
+}
