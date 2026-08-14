@@ -8,7 +8,7 @@
       "name": "evidence-first",
       "source": {
         "source": "local",
-        "path": "./plugins/evidence-first"
+        "path": "./OpenAI・Codex用/プラグイン/evidence-first"
       },
       "policy": {
         "installation": "AVAILABLE",
