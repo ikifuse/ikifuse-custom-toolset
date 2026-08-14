@@ -1,0 +1,4 @@
+interface:
+  display_name: "Evidence Audit"
+  short_description: "証拠範囲を定義し、事実・推論・未確認・競合を分離する"
+  default_prompt: "Use $evidence-audit to investigate this request and report verified facts, synthesis, conflicts, unknowns, and evidence coverage."
