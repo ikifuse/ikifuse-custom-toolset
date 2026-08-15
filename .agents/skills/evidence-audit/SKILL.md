@@ -1,104 +1,104 @@
 ---
 name: evidence-audit
-description: Investigates claims and decisions with evidence before reporting them as confirmed. Use for verification, investigation, audits, fact-checking, evidence sufficiency, unknowns, deletion safety, root-cause analysis, historical context, and high-confidence conclusions, including requests such as 確認, 実質調査, 嘘・憶測禁止, 事実のみ, 中身も調べる, or 削除してよいか.
+description: 主張や判断を証拠に基づいて調査し、必要な裏付けが揃う前に確認済みとして報告しないためのSkillです。確認、検証、調査、監査、事実確認、証拠、憶測禁止、未確認事項、削除の安全性、根本原因、経緯、高い確度の結論を求める依頼に使用します。日本語では「確認」「実質調査」「嘘・憶測禁止」「事実のみ」「中身も調べる」「削除してよいか」など、英語ではverify、confirm、investigate、audit、fact-check、evidence、no speculation、unknowns、deletion safety、root-cause analysisなどを含む依頼が対象です。ローカルファイル、Git履歴、過去のエージェントセッション、公式文書、外部資料の照合が必要な場合に使用します。
 ---
 
-# Evidence Audit
+# 証拠監査
 
-Investigate to the depth required by the requested conclusion. Treat “確認” as an evidence-sufficiency claim, not as merely looking at one source.
+求められた結論に必要な深さまで調査します。「確認」を、単に1つの情報を見ることではなく、証拠が十分であるという判断として扱います。
 
-## Establish the claim boundary
+## 主張の境界を定める
 
-1. Restate the exact claim or decision to establish.
-2. List the subclaims that must be true for that conclusion.
-3. Identify the evidence lanes capable of proving or disproving each subclaim.
-4. Do not expand a narrow request into unrelated research.
+1. 確定すべき主張または判断を正確に言い直します。
+2. その結論に必要な小さな論点を列挙します。
+3. 各論点を証明または反証できる証拠経路を特定します。
+4. 限定された依頼を無関係な調査へ広げません。
 
-Typical evidence lanes include:
+代表的な証拠経路には次を含みます。
 
-- current artifacts and their complete relevant contents;
-- references, imports, links, callers, and downstream consumers;
-- Git status, log, blame, introduction commit, deletions, and renames;
-- prior agent history through an available history-search capability;
-- official primary documentation for current product behavior;
-- runtime output, tests, logs, metadata, or external authoritative sources.
+- 現在の成果物と、その関係箇所の完全な内容
+- 参照、import、リンク、呼び出し元、下流の利用先
+- Git status、log、blame、導入commit、削除、rename
+- 利用可能な履歴検索Skillまたはツールによる過去のエージェント履歴
+- 現在の製品動作に関する公式の一次資料
+- 実行結果、テスト、ログ、metadata、外部の権威ある資料
 
-History is one evidence lane, never proof of current state by itself. Official documentation is one evidence lane, never proof of the user's local state by itself.
+履歴は証拠経路の1つであり、それだけで現在の状態を証明しません。公式文書も証拠経路の1つであり、それだけでユーザーのローカル状態を証明しません。
 
-## Select sources deliberately
+## 証拠資料を意図的に選ぶ
 
-For every evidence lane, record one of:
+各証拠経路を、次のいずれかとして記録します。
 
-- `examined`: inspected sufficiently for the subclaim;
-- `partial`: inspected, but known gaps remain;
-- `unavailable`: access or tooling is unavailable;
-- `not needed`: irrelevant to the conclusion, with a short reason.
+- `examined`: 論点に必要な範囲を十分に確認した
+- `partial`: 確認したが、既知の不足が残る
+- `unavailable`: アクセスまたはツールを利用できない
+- `not needed`: 結論に無関係。短い理由を付ける
 
-If prior agent sessions may contain relevant intent, decisions, attempts, or provenance, use an available history-search capability. Confirm that it is ready, inspect focused events or sessions before relying on snippets, and report index failures, stale records, unavailable raw sources, and excluded sources.
+過去のエージェントセッションに、関係する意図、決定、試行、由来が含まれる可能性がある場合は、利用可能な履歴検索機能を使用します。最初に利用可能な状態か確認し、検索結果の抜粋だけに依存せず、対象を絞ったeventまたはsessionを確認します。index作成の失敗、古い記録、開けない元資料、除外した資料を報告します。
 
-For current or changeable product behavior, use current official primary documentation and cite the inspected page. Do not substitute history or memory for current specifications.
+現在または変更され得る製品の動作については、現行の公式一次資料を使用し、確認したページを引用します。履歴や記憶を現在の仕様の代わりにしません。
 
-Use read-only investigation unless the user separately authorizes changes. A request to investigate, verify, audit, or report does not authorize deletion or repair.
+ユーザーが変更を別途許可していない限り、読み取り専用で調査します。調査、確認、監査、報告の依頼を、削除や修復の許可として扱いません。
 
-## Collect and challenge evidence
+## 証拠を集め、反証可能性を調べる
 
-1. Inspect the strongest direct source first.
-2. Cross-check important conclusions with an independent evidence lane when practical.
-3. Search for disconfirming evidence, not only supporting evidence.
-4. Distinguish absence of evidence from evidence of absence.
-5. Do not infer intent from timestamps, paths, names, similarity, or proximity alone.
-6. Do not infer that duplicate-looking artifacts are interchangeable; compare their relevant contents and consumers.
-7. For deletion safety, establish all of the following before recommending deletion:
-   - exact target and complete contents;
-   - tracked or untracked state;
-   - origin and history, including introduction when Git records it;
-   - references and runtime discovery paths;
-   - overlap with canonical artifacts;
-   - consequences of removal and recovery route;
-   - remaining unknowns.
+1. 最も直接的で強い資料から確認します。
+2. 重要な結論は、実用的な範囲で独立した別の証拠経路と照合します。
+3. 結論を支持する証拠だけでなく、反証する証拠も探します。
+4. 証拠がないことと、不存在の証拠を区別します。
+5. 時刻、パス、名前、類似性、近接性だけから意図を推測しません。
+6. 重複して見える成果物を同一または交換可能と推測せず、関係する内容と利用先を比較します。
+7. 削除の安全性を判断する場合は、削除を勧める前に次をすべて確認します。
+   - 正確な対象と完全な内容
+   - 追跡済みか未追跡か
+   - 導入時点を含む由来と履歴
+   - 参照と探索経路
+   - 正本との重複
+   - 削除による影響と復旧経路
+   - 残る未確認事項
 
-When tools fail or outputs are truncated, retry with a narrower query or alternate source. If the gap remains, preserve it as an unknown; never silently fill it.
+ツールが失敗した場合や出力が途中で切れた場合は、範囲を狭めた検索または別の資料で再試行します。不足が残る場合は`UNKNOWN`として保持し、黙って推測で補いません。
 
-## Classify every material statement
+## 重要な記述を分類する
 
-Use these labels internally and expose them when the distinction matters:
+次の分類を内部で使用し、区別が重要な場合は報告にも示します。
 
-- `VERIFIED`: directly supported by inspected evidence;
-- `SYNTHESIS`: reasoned conclusion from identified verified facts;
-- `CONFLICTED`: credible evidence disagrees;
-- `UNKNOWN`: required evidence was not obtained;
-- `NOT_CHECKED`: outside the examined scope.
+- `VERIFIED`: 確認した証拠から直接裏付けられる
+- `SYNTHESIS`: 特定した確認済み事実から導いた結論
+- `CONFLICTED`: 信頼できる証拠同士が一致しない
+- `UNKNOWN`: 必要な証拠を取得できなかった
+- `NOT_CHECKED`: 確認対象の範囲外
 
-Never convert `SYNTHESIS`, `UNKNOWN`, or `NOT_CHECKED` into “confirmed.” Never say a tool decided something unless its source text explicitly states that decision.
+`SYNTHESIS`、`UNKNOWN`、`NOT_CHECKED`を「確認済み」に変換してはいけません。元資料が明示的にその判断を示していない限り、ツールが判断したと報告しません。
 
-## Calculate conclusion coverage
+## 結論の証拠充足度を算出する
 
-Before reporting, assign the overall conclusion one status:
+報告前に、結論全体を次のいずれかへ分類します。
 
-- `CONFIRMED`: every required material subclaim has sufficient evidence and no unresolved contradiction changes the conclusion;
-- `PARTIAL`: useful evidence exists, but one or more material gaps remain;
-- `CONFLICTED`: evidence supports incompatible conclusions;
-- `UNKNOWN`: evidence is insufficient to choose responsibly.
+- `CONFIRMED`: 必要な重要論点がすべて十分な証拠で支えられ、結論を変える未解決の矛盾がない
+- `PARTIAL`: 有用な証拠はあるが、重要な不足が1つ以上残る
+- `CONFLICTED`: 両立しない結論を支持する証拠がある
+- `UNKNOWN`: 責任を持って判断するには証拠が不足している
 
-Source count does not determine coverage. Coverage depends on whether the required subclaims were established.
+資料の数では証拠充足度を決めません。必要な論点が確立されたかで判断します。
 
-## Report evidence before confidence
+## 確信度より先に証拠を報告する
 
-Lead with the conclusion status and answer. Then provide:
+結論状態と回答を最初に示します。その後、次を報告します。
 
-1. verified facts and their sources;
-2. synthesis, explicitly labeled;
-3. conflicts and unknowns;
-4. evidence-lane coverage;
-5. recommended action and its safety boundary;
-6. what was not done, especially destructive or external actions.
+1. 確認済み事実とその資料
+2. 推論であることを明示した`SYNTHESIS`
+3. 矛盾と未確認事項
+4. 証拠経路ごとの確認範囲
+5. 推奨する行動とその安全境界
+6. 実行しなかったこと。特に破壊操作と外部操作
 
-For history-derived findings, include the provider, session ID, event ID when available, and source status without exposing unnecessary private transcript content. For web findings, cite the supporting primary page near the claim.
+履歴に基づく発見では、不要な個人情報を出さず、利用可能な場合はprovider、session ID、event ID、元資料の状態を含めます。Web上の発見では、その主張を支える一次資料を近くに引用します。
 
-Use precise language:
+正確な表現を使用します。
 
-- Say “I examined X and found Y,” not “I checked everything,” unless the defined evidence set was actually exhausted.
-- Say “no reference was found in the searched scope,” not “there are no references,” unless the search scope is demonstrably complete.
-- Say “Git does not record the origin” when appropriate, rather than inventing an origin.
+- 証拠集合を本当に確認し尽くした場合を除き、「すべて確認した」ではなく「Xを確認し、Yが見つかった」と表現します。
+- 検索範囲が完全だと証明できる場合を除き、絶対的な不存在ではなく「検索した範囲では結果が見つからなかった」と表現します。
+- 必要な場合は由来を作り上げず、「Gitには由来が記録されていない」と表現します。
 
-Stop and request direction only when a missing choice would materially change the authorized outcome. Otherwise complete all safe, relevant, read-only investigation first.
+不足している選択によって、許可された結果が大きく変わる場合だけ停止して指示を求めます。それ以外は、安全で関係する読み取り専用調査をすべて完了します。

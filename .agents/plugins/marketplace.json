@@ -1,7 +1,7 @@
 {
   "name": "ikifuse-custom-toolset",
   "interface": {
-    "displayName": "ikifuse Custom Toolset"
+    "displayName": "ikifuse カスタムツールセット"
   },
   "plugins": [
     {

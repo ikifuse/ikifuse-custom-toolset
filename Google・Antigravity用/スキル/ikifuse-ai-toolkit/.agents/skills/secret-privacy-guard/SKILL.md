@@ -1,105 +1,105 @@
 ---
 name: secret-privacy-guard
-description: Inspects information immediately before external disclosure and classifies whether it is safe to send. Use before git commit or push, pull requests, issues, external-service submissions, public artifact generation, or sharing logs and configuration files; especially for API keys, tokens, passwords, private keys, .env secrets, credentials, personal information, cookies, sessions, user-specific paths, and local-only settings.
+description: 外部公開の直前に実際の送信対象を検査し、外部へ出して安全かを分類します。git commit・push、pull request、Issue、外部サービスへの送信、公開物の生成、ログ・設定ファイルの共有前に使用します。特にAPIキー、token、password、private key、.envの秘密値、credential、個人情報、Cookie、session、ユーザー固有パス、ローカル専用設定を確認します。
 ---
 
-# Secret & Privacy Guard
+# 機密・個人情報ガード
 
-Determine whether the exact information about to leave the local boundary can be disclosed. Keep this responsibility separate from whether an action is authorized and whether a factual conclusion has enough evidence.
+ローカル境界を越えようとしている正確な情報を外部へ出してよいか判断します。この責務を、行動が許可されているか、事実上の結論に十分な証拠があるかという責務から分離します。
 
-## Preserve the three responsibilities
+## 3つの責務を維持する
 
-- Let `action-check` decide whether the external operation is authorized and what its scope is.
-- Use this skill to inspect whether the scoped information may leave the local environment.
-- Invoke `evidence-audit` only when classification requires additional evidence, such as whether a value is already public, synthetic, canonical, revoked, or still in use.
-- Do not replace or duplicate either skill's decision.
+- 外部操作が許可されているか、その対象範囲は何かという判断は`action-check`へ委ねます。
+- このSkillは、対象情報をローカル環境の外へ出してよいか検査します。
+- 値がすでに公開済み、合成データ、正本、失効済み、現在も利用中かなど、分類に追加の証拠が必要な場合だけ`evidence-audit`を起動します。
+- どちらのSkillの判断も置き換えたり重複させたりしません。
 
-## Trigger only at a disclosure boundary
+## 外部公開の境界でだけ起動する
 
-Run immediately before content crosses into Git history, a remote repository, a pull request, an issue, a message, an external API or service, a public artifact, or a shared log or configuration file.
+内容がGit履歴、remoteリポジトリ、pull request、Issue、メッセージ、外部API・サービス、公開物、共有ログ・設定ファイルへ渡る直前に実行します。
 
-Do not burden routine local editing, local-only generation, or simple read-only investigation when no external disclosure is planned. If an external action becomes planned later, inspect the final outbound scope at that point.
+外部公開を予定していない通常のローカル編集、ローカルだけの生成、単純な読み取り専用調査を重くしません。後から外部操作を予定した場合は、その時点の最終送信範囲を検査します。
 
-## Establish the exact outbound scope
+## 正確な外部送信範囲を確定する
 
-Identify the material that will actually leave the local boundary:
+実際にローカル境界を越える情報を特定します。
 
-- for commit, inspect the staged snapshot rather than only the working tree;
-- for push, inspect commits and files not yet present on the destination remote;
-- for a pull request, inspect its complete diff, generated files, and relevant metadata;
-- for an issue or external message, inspect the final title, body, attachments, pasted logs, and links;
-- for public artifacts, inspect the generated output as well as embedded metadata and source-derived content;
-- for shared logs or configuration, inspect the exact copy being sent.
+- commitでは、作業ツリーだけでなくstage済みsnapshotを検査します。
+- pushでは、送信先remoteにまだ存在しないcommitとファイルを検査します。
+- pull requestでは、完全な差分、生成ファイル、関係するmetadataを検査します。
+- Issueまたは外部メッセージでは、最終的な件名、本文、添付、貼り付けるログ、リンクを検査します。
+- 公開物では、生成された出力に加え、埋め込みmetadataと元資料由来の内容を検査します。
+- 共有ログまたは設定では、実際に送信するコピーを検査します。
 
-Record any unreadable, excluded, binary, oversized, generated, or externally stored part as unexamined. Do not classify the whole scope as safe when a material part was not inspected.
+読み取れないもの、除外したもの、binary、大きすぎるもの、生成物、外部に保存されたものを未確認として記録します。重要な部分を検査できなかった場合、範囲全体を安全と判定しません。
 
-## Inspect candidate information
+## 情報候補を検査する
 
-Check at least:
+少なくとも次を確認します。
 
-- API keys, access tokens, passwords, private keys, and credential assignments;
-- `.env` files and environment-specific secret values;
-- session identifiers, cookies, authentication headers, and saved login material;
-- email addresses, phone numbers, addresses, names, account identifiers, and personal data in logs;
-- user-specific absolute paths and usernames;
-- local-only settings, machine configuration, internal endpoints, and files that should not enter a remote repository;
-- encoded, generated, historical, or indirect copies of the same data.
+- APIキー、access token、password、private key、credential代入
+- `.env`ファイルと環境固有の秘密値
+- session識別子、Cookie、認証header、保存済みlogin情報
+- メールアドレス、電話番号、住所、氏名、account識別子、ログ内の個人情報
+- ユーザー固有の絶対パスとusername
+- ローカル専用設定、machine設定、内部endpoint、remoteリポジトリへ入れるべきでないファイル
+- 同じ情報をencodeしたもの、生成物、履歴上のコピー、間接的なコピー
 
-Treat automated pattern matches as candidates, not proof of complete coverage. Names and addresses often require contextual inspection. Search for disconfirming context such as placeholders, synthetic fixtures, already-public contact information, or revoked credentials, and use `evidence-audit` when that distinction matters.
+自動パターン一致は候補として扱い、完全に検査できた証明にはしません。氏名と住所には文脈による確認が必要な場合があります。placeholder、合成fixture、すでに公開されている連絡先、失効済みcredentialなど、候補を否定する文脈も調べます。その区別に証拠が必要な場合は`evidence-audit`を使用します。
 
-## Use the read-only scanner
+## 読み取り専用scannerを使う
 
-For local text files, first inspect the interface:
+ローカルtextファイルでは、最初にinterfaceを確認します。
 
 ```bash
 python3 scripts/scan_sensitive.py --help
 ```
 
-Then run it against the exact outbound scope:
+その後、正確な外部送信範囲へ実行します。
 
 ```bash
 python3 scripts/scan_sensitive.py --staged
 python3 scripts/scan_sensitive.py path/to/file path/to/directory
 ```
 
-Resolve `scripts/scan_sensitive.py` relative to this `SKILL.md`, not relative to the user's project. The scanner uses only local file reads and read-only Git queries. It performs no network requests, does not print detected values, and does not modify files. It cannot prove absence, reliably identify every personal name or address, inspect inaccessible external content, or replace contextual review.
+`scripts/scan_sensitive.py`は、この`SKILL.md`を基準とする相対パスで解決し、ユーザーのprojectを基準にしません。scannerはローカルファイルの読み取りと読み取り専用Git queryだけを使用します。外部通信せず、検出値そのものを表示せず、ファイルを変更しません。不存在を証明できず、すべての氏名・住所を確実に識別できず、アクセスできない外部内容を検査できず、文脈による確認の代わりにはなりません。
 
-Antigravity may ask for command permission according to its current permission and sandbox settings. Do not bypass those controls or change the user's settings merely to run this scanner.
+Antigravityは、現在のpermissionとsandbox設定に従ってcommand許可を求める場合があります。その制御を迂回したり、scannerを実行するためだけにユーザー設定を変更したりしません。
 
-## Classify the result
+## 結果を分類する
 
-- `SAFE`: No disclosure problem was found in the scope that was actually inspected. State the inspected scope and any exclusions; never translate this into universal absence.
-- `SENSITIVE`: A secret, credential, private key, personal datum, or other information requiring protection was found.
-- `REVIEW_REQUIRED`: A candidate such as a user-specific path, local setting, ambiguous personal datum, or uncertain disclosure policy needs an owner decision or more evidence.
-- `UNKNOWN`: A material part of the outbound scope could not be inspected.
+- `SAFE`: 実際に検査できた範囲で、外部公開を妨げる問題が見つからなかった。検査範囲と除外を示し、普遍的な不存在へ言い換えない
+- `SENSITIVE`: 保護が必要な秘密情報、credential、private key、個人情報、その他の情報が見つかった
+- `REVIEW_REQUIRED`: ユーザー固有パス、ローカル設定、曖昧な個人情報、公開方針が不明な候補について、所有者の判断または追加証拠が必要
+- `UNKNOWN`: 外部送信範囲の重要な部分を検査できなかった
 
-If sensitive information is found while other material remains unknown, report both the sensitive finding and the unknown coverage instead of hiding either.
+機密情報が見つかり、同時に別の情報が未確認の場合は、どちらかを隠さず、機密情報の発見と未確認範囲の両方を報告します。
 
-## Stop safely on findings
+## 問題検出時は安全に停止する
 
-Do not delete, rewrite, redact, mask, rotate, revoke, unstage, commit, push, publish, or send anything merely because a problem was detected.
+問題を検出したという理由だけで、削除、書き換え、redact、mask、rotate、revoke、unstage、commit、push、公開、送信を行いません。
 
-Before changing a finding, require that the user explicitly authorizes that exact operation. Permission to inspect is not permission to repair. Permission to mask one copy is not permission to rotate credentials, alter source data, rewrite Git history, or publish the result.
+問題箇所を変更する前に、その正確な操作をユーザーが明示的に許可している必要があります。検査の許可は修復の許可ではありません。1つのコピーをmaskする許可を、credentialのrotate、元データの変更、Git履歴の書き換え、結果の公開への許可にしません。
 
-When a finding blocks an authorized external action, report:
+問題によって許可済みの外部操作を停止する場合は、次を報告します。
 
-- what category was detected without exposing the value;
-- which file or outbound item contains it;
-- why it is risky;
-- whether it appears capable of reaching the external destination;
-- the recommended response;
-- whether a bounded automatic fix appears possible;
-- any unexamined scope or unresolved classification.
+- 値を公開せずに、検出した情報の種類
+- その情報を含むファイルまたは外部送信項目
+- 危険な理由
+- 外部の送信先へ到達する可能性
+- 推奨する対応
+- 限定された自動修正が可能に見えるか
+- 未確認範囲または未解決の分類
 
-Resume the external action only after the finding is resolved or the owner makes an informed disclosure decision within applicable policy. Re-scan the final outbound material after any authorized correction.
+問題が解決した場合、または所有者が適用される方針の範囲内で十分な情報を得たうえで公開を判断した場合だけ、外部操作を再開します。許可された修正後は、最終的な外部送信情報を再検査します。
 
-## Coordinate the external action
+## 外部操作と連携する
 
-Use this order when all three skills are relevant:
+3つのSkillがすべて関係する場合は、次の順序を使います。
 
-1. Use `action-check` to establish that the external action and its scope are authorized.
-2. Use `secret-privacy-guard` to inspect the exact outbound information.
-3. Use `evidence-audit` only for material classification questions that need additional evidence.
-4. Continue only when the external action remains authorized and the privacy result permits disclosure.
+1. `action-check`で、外部操作と対象範囲が許可されていることを確認します。
+2. `secret-privacy-guard`で、実際に外部へ出る情報を検査します。
+3. 追加証拠が必要な重要な分類問題だけを`evidence-audit`で調べます。
+4. 外部操作が引き続き許可され、個人情報・機密情報の判定が公開を許す場合だけ続行します。
 
-Never let a `SAFE` result authorize an action. Never let action authorization imply that the information is safe to disclose.
+`SAFE`の結果によって操作を許可してはいけません。操作が許可されているという理由で、情報を安全と判断してはいけません。

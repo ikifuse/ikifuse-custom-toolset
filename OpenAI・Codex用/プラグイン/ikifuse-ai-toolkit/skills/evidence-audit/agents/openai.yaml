@@ -1,4 +1,4 @@
 interface:
-  display_name: "Evidence Audit"
+  display_name: "証拠監査"
   short_description: "証拠範囲を定義し、事実・推論・未確認・競合を分離する"
   default_prompt: "$evidence-audit を使ってこの依頼を実質調査し、確認済み事実・推論・矛盾・未確認事項と証拠範囲を報告してください。"

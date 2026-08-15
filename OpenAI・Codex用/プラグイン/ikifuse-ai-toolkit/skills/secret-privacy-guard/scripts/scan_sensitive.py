@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only candidate scanner for secrets, personal data, and local-only data."""
+"""秘密情報・個人情報・ローカル専用情報の候補を検出する読み取り専用スキャナー。"""
 
 from __future__ import annotations
 

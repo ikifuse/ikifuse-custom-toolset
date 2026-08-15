@@ -11,11 +11,11 @@ Evidence Firstを原点として、`evidence-audit`、`action-check`、`secret-p
 
 - [収録しているスキル](#収録しているスキル)
 - [使い方](#使い方)
-- [Action Checkの内部ガード](#action-checkの内部ガード)
-- [Action Checkの報告形式](#action-checkの報告形式)
-- [Action Checkの検証ケース](#action-checkの検証ケース)
-- [Secret & Privacy Guardの判定](#secret--privacy-guardの判定)
-- [Secret & Privacy Guardの検証ケース](#secret--privacy-guardの検証ケース)
+- [行動確認（action-check）の内部ガード](#行動確認action-checkの内部ガード)
+- [行動確認（action-check）の報告形式](#行動確認action-checkの報告形式)
+- [行動確認（action-check）の検証ケース](#行動確認action-checkの検証ケース)
+- [機密・個人情報ガード（secret-privacy-guard）の判定](#機密個人情報ガードsecret-privacy-guardの判定)
+- [機密・個人情報ガード（secret-privacy-guard）の検証ケース](#機密個人情報ガードsecret-privacy-guardの検証ケース)
 - [期待される調査結果](#期待される調査結果)
 - [期待動作の検証ケース](#期待動作の検証ケース)
 - [連携の仕組み](#連携の仕組み)
@@ -35,7 +35,7 @@ Evidence Firstを原点として、`evidence-audit`、`action-check`、`secret-p
 | `action-check` | 合意した操作・対象・停止点を維持し、重要な曖昧さだけを確認する |
 | `secret-privacy-guard` | 外部へ出す情報に秘密・個人・ローカル専用情報が含まれないか確認する |
 
-### Evidence Auditが解決すること
+### 証拠監査（evidence-audit）が解決すること
 
 同じ「確認」という言葉でも、依頼によって必要な深さは異なります。
 
@@ -45,11 +45,11 @@ Evidence Firstを原点として、`evidence-audit`、`action-check`、`secret-p
 - 現在の公式仕様と照合する必要がある場合
 - 削除してよいか、影響範囲と復旧方法まで調べる必要がある場合
 
-Evidence Auditは、依頼された結論を成立させるために必要な小さな論点へ分解し、それぞれを裏付けられる情報源を選びます。
+証拠監査は、依頼された結論を成立させるために必要な小さな論点へ分解し、それぞれを裏付けられる情報源を選びます。
 
 情報源を一つ見ただけで「すべて確認した」とは報告しません。
 
-### Action Checkが解決すること
+### 行動確認（action-check）が解決すること
 
 - 相談を実装許可として扱わない
 - 「進めてください」を、直前に合意した範囲より広げない
@@ -60,7 +60,7 @@ Evidence Auditは、依頼された結論を成立させるために必要な小
 - 作業開始前の変更と今回の変更を分け、許可範囲と実際の差分を照合する
 - 削除や復旧困難な操作だけ、復旧経路と破壊性を厳しく確認する
 
-### Secret & Privacy Guardが解決すること
+### 機密・個人情報ガード（secret-privacy-guard）が解決すること
 
 - commit・push・PR・Issue・外部送信・公開物生成の直前に、実際の送信対象を確認する
 - APIキー、トークン、パスワード、秘密鍵、`.env`、Cookie、セッション情報を検出する
@@ -102,22 +102,22 @@ $evidence-audit を使って実質調査してください。
 嘘・憶測禁止。事実・推論・矛盾・未確認事項を分けてください。
 ```
 
-## Action Checkの内部ガード
+## 行動確認（action-check）の内部ガード
 
-`action-check`は、次の4つを一つのSkill内で必要な場合だけ使います。Scope Diff Guard、Recovery Guard、Destructive Guardは独立Skillではありません。
+`action-check`は、次の4つを一つのスキル内で必要な場合だけ使います。Scope Diff Guard、Recovery Guard、Destructive Guardは独立スキルではありません。
 
 | 内部ガード | 役割 |
 | --- | --- |
-| Authorization Boundary | ユーザーが許可した対象・操作・停止点を確定する |
-| Scope Diff Guard | 開始前の変更を保護し、実際の変更を許可範囲と照合する |
-| Recovery Guard | 削除・上書きなどで、利用可能な復旧元が本当にあるか確認する |
-| Destructive Guard | 削除・強制操作・不可逆操作を通常編集より厳しく扱う |
+| 許可境界（Authorization Boundary） | ユーザーが許可した対象・操作・停止点を確定する |
+| 範囲差分ガード（Scope Diff Guard） | 開始前の変更を保護し、実際の変更を許可範囲と照合する |
+| 復旧ガード（Recovery Guard） | 削除・上書きなどで、利用可能な復旧元が本当にあるか確認する |
+| 破壊操作ガード（Destructive Guard） | 削除・強制操作・不可逆操作を通常編集より厳しく扱う |
 
 通常の小規模な非破壊編集では、対象がGit未追跡・未commitであっても、それだけを理由にRecovery GuardやDestructive Guardを発動させません。未追跡データでは、削除、全面上書き、大量変更、構造変更など、元内容を失う復旧リスクがある場合にRecovery Guardを発動します。削除安全性、参照・依存関係、下流影響などの事実調査が必要な場合は`evidence-audit`が証拠を調べ、`action-check`はその結果から続行または停止を判断します。
 
 Scope Diff Guardは、変更を`PRE_EXISTING`、`TASK_CHANGE`、`OUT_OF_SCOPE_TASK_CHANGE`、`UNKNOWN`に分けます。作業中に発生源を確認できない変更は、時刻だけを根拠に今回の変更と断定しません。危険や範囲外変更を検出しても、勝手なrevert・削除・バックアップ・commitは行いません。
 
-## Action Checkの報告形式
+## 行動確認（action-check）の報告形式
 
 報告は、作業の大きさと危険度に合わせて変えます。
 
@@ -152,7 +152,7 @@ Scope Diff Guardは、変更を`PRE_EXISTING`、`TASK_CHANGE`、`OUT_OF_SCOPE_TA
 【判断後に行うこと】選択後の操作と停止点
 ```
 
-## Action Checkの検証ケース
+## 行動確認（action-check）の検証ケース
 
 | # | ケース | 確認する契約 |
 | --- | --- | --- |
@@ -164,12 +164,10 @@ Scope Diff Guardは、変更を`PRE_EXISTING`、`TASK_CHANGE`、`OUT_OF_SCOPE_TA
 | 6 | `rm -rf`相当の操作 | 正確な対象・許可・影響・復旧を厳しく確認する |
 | 7 | 「安全なら削除」 | 証拠が確認済みでなければ削除しない |
 | 8 | 通常のコード修正 | Recovery／Destructive Guardを不要に発動しない |
-| 9 | 「修正してcommit・pushまで」 | 許可を取り直さず、公開前にSecret & Privacy Guardと連携する |
+| 9 | 「修正してcommit・pushまで」 | 許可を取り直さず、公開前に機密・個人情報ガードと連携する |
 | 10 | 作業終了時 | ベースライン・許可範囲・実際の変更を照合する |
 
-`skills/action-check/scripts/test_action_check_contract.py`は、上の10契約がSkill定義から欠落していないかを機械的に検査します。これは新しい会話での実動作試験を置き換えるものではありません。
-
-## Secret & Privacy Guardの判定
+## 機密・個人情報ガード（secret-privacy-guard）の判定
 
 | 判定 | 意味 |
 | --- | --- |
@@ -182,7 +180,7 @@ Scope Diff Guardは、変更を`PRE_EXISTING`、`TASK_CHANGE`、`OUT_OF_SCOPE_TA
 
 問題を検出した場合は、値そのものを表示せず、種類、ファイル、危険な理由、外部へ届く可能性、推奨対応、自動修正の可否、未確認事項を報告します。
 
-## Secret & Privacy Guardの検証ケース
+## 機密・個人情報ガード（secret-privacy-guard）の検証ケース
 
 | # | ケース | 期待する動作 |
 | --- | --- | --- |
@@ -240,11 +238,11 @@ Scope Diff Guardは、変更を`PRE_EXISTING`、`TASK_CHANGE`、`OUT_OF_SCOPE_TA
 3つのスキルは、必要な場合だけ連携します。
 
 ```text
-Action Check：外部操作と対象範囲が許可されているか確認
+行動確認（action-check）：外部操作と対象範囲が許可されているか確認
     ↓
-Secret & Privacy Guard：対象情報を外部へ出してよいか確認
+機密・個人情報ガード（secret-privacy-guard）：対象情報を外部へ出してよいか確認
     ↓
-Evidence Audit：機密性の判断に証拠が必要な場合だけ調査
+証拠監査（evidence-audit）：機密性の判断に証拠が必要な場合だけ調査
     ↓
 問題がなければ、許可された外部操作を継続
 ```
@@ -275,14 +273,11 @@ ikifuse-ai-toolkit/
     │   └── agents/openai.yaml
     ├── action-check/
     │   ├── SKILL.md
-    │   ├── agents/openai.yaml
-    │   └── scripts/test_action_check_contract.py
+    │   └── agents/openai.yaml
     └── secret-privacy-guard/
         ├── SKILL.md
         ├── agents/openai.yaml
-        └── scripts/
-            ├── scan_sensitive.py
-            └── test_scan_sensitive.py
+        └── scripts/scan_sensitive.py
 ```
 
 ## 各ファイルの役割
@@ -294,12 +289,10 @@ ikifuse-ai-toolkit/
 | `skills/evidence-audit/SKILL.md` | 証拠収集、反証確認、分類、結論判定、報告方法を定義する |
 | `skills/evidence-audit/agents/openai.yaml` | Codex上の表示名、短い説明、既定プロンプトを定義する |
 | `skills/action-check/SKILL.md` | 相談・調査・実装・削除・公開の境界と報告方法を定義する |
-| `skills/action-check/agents/openai.yaml` | Action Checkの表示名、短い説明、既定プロンプトを定義する |
-| `skills/action-check/scripts/test_action_check_contract.py` | Action Checkの10個の安全契約が定義から欠落していないか検査する |
+| `skills/action-check/agents/openai.yaml` | 行動確認の表示名、短い説明、既定プロンプトを定義する |
 | `skills/secret-privacy-guard/SKILL.md` | 外部公開前の検査範囲、判定、安全境界、3スキルの連携を定義する |
-| `skills/secret-privacy-guard/agents/openai.yaml` | Secret & Privacy Guardの表示名、短い説明、既定プロンプトを定義する |
+| `skills/secret-privacy-guard/agents/openai.yaml` | 機密・個人情報ガードの表示名、短い説明、既定プロンプトを定義する |
 | `skills/secret-privacy-guard/scripts/scan_sensitive.py` | 値を表示・変更せず、ローカルファイルやGit indexの候補を検出する |
-| `skills/secret-privacy-guard/scripts/test_scan_sensitive.py` | 指定8ケースと絶対パスの補助ケースを合成データで検証する |
 
 ## 現在のローカル環境との関係
 

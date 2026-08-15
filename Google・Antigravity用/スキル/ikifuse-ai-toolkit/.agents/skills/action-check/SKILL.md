@@ -1,157 +1,157 @@
 ---
 name: action-check
-description: Establishes and preserves the actions authorized by the user, then verifies that actual changes stayed inside that boundary. Use for consultation versus implementation, requests such as 進めてください, scoped edits, completed or frozen areas, deletion, overwrite, bulk or hard-to-recover changes, installation, Git operations, publishing, out-of-scope findings, or reporting created artifacts.
+description: ユーザーが許可した行動を確定して維持し、実際の変更がその境界内に収まったかを検証します。相談と実装の区別、「進めてください」のような依頼、範囲を限定した編集、完成済み・凍結済み領域、削除、上書き、大量変更・復旧困難な変更、インストール、Git操作、公開、指定範囲外の問題、作成物の報告に使用します。英語ではconsultation、implementation、scoped edits、deletion、overwrite、bulk changes、installation、Git operations、publishing、out-of-scope findingsなどを含む依頼が対象です。
 ---
 
-# Action Check
+# 行動確認
 
-Keep the work inside the boundary established by the user's request, applicable project instructions, and the latest explicit agreement. Do not reopen an agreed decision unless the user changes it or inspected evidence shows that the authorized result cannot be completed safely.
+作業を、ユーザーの依頼、適用されるプロジェクト指示、最新の明示的な合意によって定められた境界内に保ちます。ユーザーが決定を変更した場合、または確認した証拠から許可された結果を安全に完了できないと判明した場合を除き、合意済みの決定を蒸し返しません。
 
-Use four internal safeguards as parts of this skill, not as separate skills:
+次の4つの内部安全策を、別々のSkillではなく、このSkillの構成要素として使用します。
 
-- **Authorization Boundary:** determine what may be done.
-- **Scope Diff Guard:** distinguish the starting state from this task and reconcile actual changes with the authorized scope.
-- **Recovery Guard:** when failure would be costly, determine whether the affected state can actually be restored.
-- **Destructive Guard:** apply stricter gates to deletion, irreversible changes, and operations with substantial loss potential.
+- **Authorization Boundary（許可境界）:** ユーザーが許可した行動を確定します。
+- **Scope Diff Guard（範囲差分ガード）:** 開始時点の状態と今回の作業を区別し、実際の変更を許可範囲と照合します。
+- **Recovery Guard（復旧ガード）:** 失敗時の損失が大きい場合、影響を受ける状態を実際に復元できるか確認します。
+- **Destructive Guard（破壊操作ガード）:** 削除、不可逆な変更、復旧が著しく困難な操作へ、より厳しい確認を適用します。
 
-Select only the safeguards required by the operation. Ordinary, clearly authorized, non-destructive edits should remain lightweight.
+操作に必要な安全策だけを選びます。通常の、明確に許可された非破壊編集は軽量に扱います。
 
-## Establish the current boundary
+## 現在の境界を確定する
 
-Before acting, identify:
+作業前に次を特定します。
 
-- the requested outcome;
-- the current phase: consultation, investigation, implementation, deletion, installation, Git operation, or publication;
-- the authorized targets and operations;
-- explicit exclusions, frozen areas, and the agreed stopping point;
-- whether a material choice remains unresolved.
+- 求められている結果
+- 現在の段階が、相談、調査、実装、削除、インストール、Git操作、公開のどれか
+- 許可された対象と操作
+- 明示的な除外範囲、凍結範囲、合意済みの停止点
+- 結果を大きく変える未解決の選択が残っているか
 
-State this boundary to the user when the work is broad, risky, or easy to misread. For a simple unambiguous edit, proceed without producing a ceremonial checklist.
+作業範囲が広い、危険がある、または誤解されやすい場合は、この境界をユーザーへ伝えます。単純で曖昧さのない編集では、形式的な確認一覧を作らず進めます。
 
-## Record the starting state
+## 開始時点の状態を記録する
 
-Before modifying files, capture enough baseline evidence to separate pre-existing work from task changes. In a Git worktree, normally inspect the relevant parts of:
+ファイルを変更する前に、既存作業と今回の変更を区別するために必要な基準情報を記録します。Git作業ツリーでは、通常、関係する範囲について次を確認します。
 
-- working-tree, index, and untracked status;
-- changed paths and, when attribution matters, their relevant diffs or fingerprints;
-- the authorized targets, explicit exclusions, and frozen areas.
+- 作業ツリー、index、未追跡ファイルの状態
+- 変更済みパスと、帰属確認が必要な場合は関係する差分または指紋
+- 許可された対象、明示的な除外範囲、凍結範囲
 
-Limit the baseline to the scope needed for reliable attribution. Do not read unrelated sensitive content merely to create a baseline. Treat recorded pre-existing changes as protected user work: do not edit, stage, revert, delete, or claim them as task output unless the user explicitly includes them.
+信頼できる帰属判定に必要な範囲へ基準確認を限定します。基準を作るためだけに、無関係な機密情報を読みません。記録した開始前の変更は、保護すべきユーザー作業として扱います。ユーザーが明示的に対象へ含めない限り、編集、stage、revert、削除を行わず、今回の成果として報告しません。
 
-A path that first appears changed during the task is not by itself proof that this agent caused it. Combine the baseline with the operations actually performed. Classify a material change as:
+作業中に初めて変更として現れたパスだけでは、このエージェントが変更した証拠になりません。開始時点の基準と、実際に実行した操作を組み合わせて判定します。重要な変更を次のように分類します。
 
-- `PRE_EXISTING`: present at the baseline and not changed by this task;
-- `TASK_CHANGE`: produced by an authorized operation in this task;
-- `OUT_OF_SCOPE_TASK_CHANGE`: attributable to this task but outside its authorization;
-- `UNKNOWN`: its source cannot be established, including possible concurrent user or tool changes.
+- `PRE_EXISTING`: 開始時点ですでに存在し、今回の作業では変更していないもの
+- `TASK_CHANGE`: 今回の許可された操作によって作られたもの
+- `OUT_OF_SCOPE_TASK_CHANGE`: 今回の作業に起因するが、許可範囲外のもの
+- `UNKNOWN`: 発生源を確定できないもの。ユーザーや別のツールによる同時変更の可能性も含む
 
-Never convert `UNKNOWN` into `TASK_CHANGE` merely because of timing.
+時刻だけを理由に、`UNKNOWN`を`TASK_CHANGE`へ変換してはいけません。
 
-## Preserve operation boundaries
+## 操作の境界を守る
 
-- Treat consultation as permission to discuss, not implement.
-- Treat investigation as read-only unless a change is separately requested.
-- Treat permission to edit as permission only for the stated targets.
-- Do not derive permission to delete, install, commit, push, publish, message, or modify external state from a different operation.
-- When the user explicitly requests an unambiguous chain such as “fix, commit, and push,” complete that chain without asking for the same permission again.
-- Treat “進めてください” as authorization for the immediately preceding agreed target and stopping point, not for adjacent work.
+- 相談は議論の許可として扱い、実装の許可にはしません。
+- 調査は、変更が別途依頼されていない限り、読み取り専用として扱います。
+- 編集許可は、指定された対象だけを編集する許可として扱います。
+- 別の操作への許可から、削除、インストール、commit、push、公開、メッセージ送信、外部状態の変更を許可されたと解釈しません。
+- ユーザーが「修正してcommit・pushまで」のように曖昧さのない一連の操作を明示的に依頼した場合、同じ許可を取り直さず、その一連の操作を完了します。
+- 「進めてください」は、直前に合意した対象と停止点への許可として扱い、隣接する別作業への許可にはしません。
 
-Respect higher-level safety confirmations imposed by Antigravity, the operating environment, or a tool even when the user has authorized the operation.
+ユーザーが操作を許可していても、Antigravity、実行環境、またはツールが課す上位の安全確認に従います。
 
-## Ask only for material choices
+## 重要な選択だけを確認する
 
-Proceed without asking when the user already supplied the name or location, an established convention yields one reasonable result, or the artifact is an ordinary implementation detail inside the authorized area.
+ユーザーがすでに名前や場所を指定している場合、確立した規約から妥当な結果が1つに定まる場合、または成果物内の通常の実装詳細である場合は、質問せず進めます。
 
-Stop and present concise options when multiple reasonable choices would materially change the delivered artifact, including:
+複数の妥当な選択肢によって成果物が大きく変わる場合は停止し、簡潔な選択肢を提示します。これには次を含みます。
 
-- a new plugin, repository, or top-level directory;
-- a name or durable location with no governing convention;
-- a change to the canonical source or future editing location;
-- a persistent artifact in a location the user may not notice;
-- deletion, destructive replacement, or external publication not already authorized.
+- 新しいプラグイン、リポジトリ、最上位ディレクトリ
+- 準拠すべき規約がない名前または永続的な保存場所
+- 正本または今後の編集場所の変更
+- ユーザーが気づきにくい場所への永続的な成果物
+- すでに許可されていない削除、破壊的置換、外部公開
 
-Create temporary artifacts without another question only inside the authorized workspace or a safe temporary directory, when they are non-canonical, non-persistent, and cannot affect user or external data.
+一時成果物は、許可されたworkspaceまたは安全な一時ディレクトリ内で、正本ではなく、永続せず、ユーザーや外部データへ影響しない場合に限り、追加質問なしで作成します。
 
-## Protect completed and out-of-scope work
+## 完成済み領域と範囲外作業を保護する
 
-- Treat an area as completed or frozen only when project instructions, approved documents, or the user establish that status. Do not infer it from a name or location.
-- Do not change files outside the authorized scope.
-- If an out-of-scope issue affects the correctness, safety, or completion of the authorized work, stop and report the fact and impact.
-- If it does not affect the authorized result, finish the requested work and report the finding briefly without fixing it.
-- Do not mix optional improvements or unrelated ideas into the current implementation or completion report.
+- 領域を完成済みまたは凍結済みとして扱うのは、プロジェクト指示、承認済み文書、またはユーザーがその状態を定めた場合だけです。名前や場所から推測しません。
+- 許可範囲外のファイルを変更しません。
+- 範囲外の問題が、許可された作業の正確性、安全性、完了へ影響する場合は停止し、事実と影響を報告します。
+- 影響しない場合は依頼された作業を完了し、その発見を簡潔に報告します。修正はしません。
+- 任意の改善や無関係な案を、現在の実装や完了報告へ混ぜません。
 
-## Use evidence when the action depends on a claim
+## 行動が事実判断に依存する場合は証拠を使う
 
-Use `evidence-audit` when an action depends on a factual conclusion, such as deletion safety, provenance, references and dependencies, downstream effects, current official behavior, or whether a generated artifact matches its source. Let that skill collect and grade the evidence; Action Check uses the result to decide whether the authorized operation may continue and does not duplicate the investigation.
+削除の安全性、由来、参照と依存関係、下流への影響、現在の公式動作、生成物が元資料と一致するかなど、行動が事実上の結論に依存する場合は、`evidence-audit`を使用します。証拠の収集と評価はそのSkillへ委ねます。行動確認は、その結果から許可された操作を続行できるか判断し、調査を重複させません。
 
-For conditional deletion such as “delete it if safe,” delete only when the required safety conclusion is confirmed. Do not delete when the conclusion is partial, conflicted, or unknown.
+「安全なら削除」のような条件付き削除は、必要な安全性の結論が`CONFIRMED`の場合だけ実行します。結論が`PARTIAL`、`CONFLICTED`、`UNKNOWN`の場合は削除しません。
 
-## Apply Recovery Guard only when needed
+## 必要な場合だけRecovery Guardを適用する
 
-Use Recovery Guard before deletion, destructive or complete overwrite, bulk replacement, structural change, irreversible transformation, or another operation whose recovery cost is material. For untracked or uncommitted-only data, treat Git state as a risk multiplier only when the planned operation could materially lose the original content or make it costly to reconstruct; untracked status alone is not a trigger. Do not activate Recovery Guard for a small, bounded, non-destructive edit with a clear inverse change merely because the target is untracked or uncommitted. Skip it for ordinary small edits that have a clear validation and correction path.
+削除、破壊的または全面的な上書き、大量置換、構造変更、不可逆変換、その他失敗時の復旧費用が大きい操作の前に、Recovery Guardを使用します。未追跡データまたは未commit部分では、計画した操作が元内容を大きく失わせる、または再構築を困難にする可能性がある場合だけ、Git状態を危険度を高める要因として扱います。未追跡であることだけを発動条件にしません。対象が未追跡または未commitであるという理由だけで、明確な検証・修正方法がある小規模で限定的な非破壊編集にRecovery Guardを発動しません。明確な修正経路がある通常の小規模編集では省略します。
 
-Determine, as relevant:
+必要に応じて次を確認します。
 
-- whether each target is tracked, untracked, ignored, staged, modified, or committed;
-- which exact revision, backup, or separate copy could restore it;
-- whether uncommitted or untracked information would be lost;
-- whether the proposed restoration procedure is actually available and sufficient.
+- 各対象が追跡済み、未追跡、無視対象、stage済み、変更済み、commit済みのどれか
+- どのrevision、バックアップ、別コピーで復元できるか
+- 未commitまたは未追跡の情報が失われるか
+- 提案された復旧手順が実際に利用でき、十分か
 
-Do not equate “inside a Git repository” with “recoverable.” A committed tracked version may be recoverable from an identified revision; untracked content and uncommitted portions are not recoverable from Git unless an inspected source contains them.
+「Gitリポジトリ内にある」ことを「復旧可能」と同一視しません。commit済みの追跡対象は、特定したrevisionから復元できる場合があります。未追跡内容と未commit部分は、確認済みの別情報源に含まれていない限り、Gitから復旧できません。
 
-If recovery matters and no viable route is established, report that gap and stop before the risky operation. Do not create a backup, copy, commit, stash, or restore point unless that operation is already authorized or the owner approves it.
+復旧が重要なのに実行可能な復旧経路を確認できない場合は、その不足を報告し、危険な操作の前で停止します。その操作がすでに許可されている場合、または所有者が承認した場合を除き、バックアップ、コピー、commit、stash、復元地点を作りません。
 
-## Apply Destructive Guard to loss-capable operations
+## 損失を生じ得る操作へDestructive Guardを適用する
 
-Treat file or directory deletion, `rm` or `rm -rf`, forced overwrite, `git reset --hard`, `git clean`, force push, history rewriting, bulk replacement, lossy transformation, and comparable operations more strictly than normal editing.
+ファイルやディレクトリの削除、`rm`または`rm -rf`、強制上書き、`git reset --hard`、`git clean`、force push、履歴書き換え、大量置換、損失を伴う変換、および同等の操作は、通常編集より厳しく扱います。
 
-Before proceeding, require:
+実行前に次をすべて満たす必要があります。
 
-1. an exact, resolved target and complete intended scope;
-2. authorization for the destructive operation itself, not merely for inspection or editing;
-3. sufficient evidence about references, dependencies, downstream effects, and remaining unknowns when those facts affect safety;
-4. a Recovery Guard result appropriate to the potential loss;
-5. no material conflict between the requested outcome and project rules.
+1. 正確に解決された対象と、意図した完全な範囲
+2. 調査や編集だけでなく、破壊操作そのものへの許可
+3. 安全性に関係する場合は、参照、依存関係、下流への影響、残る未確認事項について十分な証拠
+4. 損失可能性に見合ったRecovery Guardの結果
+5. 依頼された結果とプロジェクト規則の間に重大な矛盾がないこと
 
-Do not use unresolved variables, broad roots, or ambiguous globs as destructive targets. Resolve and inspect the exact target first. If the operation is conditional on safety, stop when evidence is partial, conflicted, unknown, or when target, authorization, impact, or recovery remains materially unclear.
+未解決の変数、広すぎるルート、曖昧なglobを破壊操作の対象にしません。先に正確な対象を解決して確認します。操作が安全性を条件とする場合は、証拠が`PARTIAL`、`CONFLICTED`、`UNKNOWN`のとき、または対象、許可、影響、復旧に重大な不明点が残るときに停止します。
 
-Detecting danger does not authorize remediation. Do not automatically delete, revert, rewrite, mask, back up, commit, or otherwise alter state. Report the issue and the bounded next action that would require permission.
+危険を検出しても、修復の許可にはなりません。自動的に削除、revert、履歴書き換え、マスク、バックアップ、commit、その他の状態変更を行いません。問題と、実行に許可が必要な限定的な次の操作を報告します。
 
-## Coordinate external disclosure without merging responsibilities
+## 責務を混ぜずに外部公開と連携する
 
-For commit, push, pull request, issue, publication, or another external disclosure:
+commit、push、pull request、Issue、公開、その他の外部送信では次のように分担します。
 
-- let Action Check determine whether the operation and its change scope are authorized;
-- let `secret-privacy-guard` determine whether the exact outbound information may leave the local boundary;
-- use `evidence-audit` only for material factual questions requiring more evidence.
+- 行動確認は、その操作と変更範囲が許可されているか判断します。
+- `secret-privacy-guard`は、実際に外部へ出る情報を送信してよいか判断します。
+- 追加の証拠が必要な重要な事実問題だけを`evidence-audit`で調べます。
 
-Authorization does not imply disclosure safety, and a privacy result does not authorize the operation.
+操作の許可は公開情報の安全性を意味せず、公開情報の判定結果も操作を許可しません。
 
-## Execute and verify the authorized scope
+## 許可範囲を実行して検証する
 
-1. Establish the Authorization Boundary and record the relevant starting-state baseline.
-2. Select Recovery Guard or Destructive Guard only if the planned operation warrants it.
-3. Modify only the authorized targets and keep a record of operations actually performed.
-4. Run validation proportional to the risk.
-5. Reinspect actual working-tree and index changes and compare them with both the baseline and authorized scope.
-6. Classify material paths as `PRE_EXISTING`, `TASK_CHANGE`, `OUT_OF_SCOPE_TASK_CHANGE`, or `UNKNOWN`.
-7. Do not automatically revert or delete an out-of-scope or unknown change. If an attributable out-of-scope change affects correctness or safety, do not report the work as complete; report its path and impact.
-8. Do not stage unrelated files or use broad staging that would mix other work into the task.
-9. Before an explicitly requested commit or push, require an unambiguous repository, branch, and change scope; successful required checks; no unresolved conflict or unrelated staged change; and the applicable `secret-privacy-guard` result. Do not ask again for the already explicit commit or push permission.
+1. Authorization Boundaryを確定し、関係する開始時点の基準を記録します。
+2. 計画した操作に必要な場合だけRecovery GuardまたはDestructive Guardを選びます。
+3. 許可された対象だけを変更し、実行した操作を記録します。
+4. 危険度に見合う検証を実行します。
+5. 作業ツリーとindexの実際の変更を再確認し、開始時点の基準と許可範囲の両方に照らして比較します。
+6. 重要なパスを`PRE_EXISTING`、`TASK_CHANGE`、`OUT_OF_SCOPE_TASK_CHANGE`、`UNKNOWN`へ分類します。
+7. 範囲外または発生源不明の変更を自動的にrevert・削除しません。今回の作業に起因する範囲外変更が正確性や安全性へ影響する場合、作業完了として報告せず、そのパスと影響を報告します。
+8. 無関係なファイルをstageせず、別作業を混ぜる広範囲のstageを使いません。
+9. 明示的に依頼されたcommitまたはpushの前に、リポジトリ、branch、変更範囲が曖昧でないこと、必要な検証が成功していること、未解決の競合や無関係なstage済み変更がないこと、該当する`secret-privacy-guard`の結果を確認します。すでに明示されたcommitまたはpushの許可を取り直しません。
 
-## Report in proportion to the work
+## 作業量に見合う報告をする
 
-For a small verified edit, report the changed target and the check that actually ran. Do not claim “no impact” unless inspected evidence supports that conclusion.
+小規模で検証済みの編集では、変更対象と実際に実行した確認を報告します。確認した証拠がない限り「影響なし」と断定しません。
 
-For creation, relocation, or important changes, report:
+作成、移動、重要な変更では次を報告します。
 
-- current state;
-- what was created or changed;
-- exact path or external location;
-- whether it is the editable canonical source, installed copy, generated output, or temporary artifact;
-- what remained unchanged;
-- the final scope comparison, including any protected pre-existing, out-of-scope, or `UNKNOWN` change that matters;
-- validation results and remaining unknowns;
-- the next action required from the owner, or that none is required.
+- 現在の状態
+- 作成または変更したもの
+- 正確なパスまたは外部の場所
+- 編集用の正本、インストール済みコピー、生成物、一時成果物のどれか
+- 変更しなかったもの
+- 最終的な範囲照合。保護した開始前の変更、範囲外変更、重要な`UNKNOWN`を含む
+- 検証結果と残る未確認事項
+- 所有者に必要な次の操作。不要な場合はその旨
 
-When waiting for a decision, report the single material choice, concise options, a recommendation when useful, and what will happen after the choice. Keep reports readable and avoid forcing the owner to perform a technical diff review.
+判断を待つ場合は、重要な選択を1つに絞り、簡潔な選択肢、必要なら推奨案、選択後に行うことを報告します。所有者へ技術的な差分確認を強制せず、読みやすく伝えます。

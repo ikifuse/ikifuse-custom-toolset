@@ -1,4 +1,4 @@
 interface:
-  display_name: "Secret & Privacy Guard"
+  display_name: "機密・個人情報ガード"
   short_description: "外部公開前に秘密情報・個人情報・ローカル専用情報を確認する"
   default_prompt: "$secret-privacy-guard を使って、外部公開対象に秘密情報や個人情報が含まれないか確認してください。"

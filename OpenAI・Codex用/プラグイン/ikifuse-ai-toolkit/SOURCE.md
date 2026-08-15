@@ -29,7 +29,7 @@
 - 追加したもの: `action-check` の相談／実装境界、変更範囲、重要な曖昧さ、完成済み範囲、任意改善、作成物報告の手順
 - 設計根拠: <https://github.com/ikifuse/ikifuse-custom-toolset/issues/1>
 
-## Secret & Privacy Guardの追加
+## 機密・個人情報ガード（secret-privacy-guard）の追加
 
 - 変更理由: GitHubや外部サービスへ、秘密情報・個人情報・ローカル専用情報が意図せず流出することを防ぐため
 - バージョン: `0.2.0` から `0.3.0` へ変更
