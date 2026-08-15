@@ -5,10 +5,10 @@
   },
   "plugins": [
     {
-      "name": "evidence-first",
+      "name": "ikifuse-ai-toolkit",
       "source": {
         "source": "local",
-        "path": "./OpenAI・Codex用/プラグイン/evidence-first"
+        "path": "./OpenAI・Codex用/プラグイン/ikifuse-ai-toolkit"
       },
       "policy": {
         "installation": "AVAILABLE",

@@ -19,3 +19,12 @@
 元の evidence-first リポジトリは削除せず、取り込み前の履歴と復旧元として残します。
 このフォルダの内容を変更した場合は、このファイルへ変更理由と元との差分を追記します。
 外部へ共有する前に、元リポジトリにライセンスが設定されているかを改めて確認します。
+
+## ikifuse AI Toolkitへの拡張
+
+- 変更理由: ikifuse-custom-toolset Issue #1で整理した認識差と、obsidian-ig-migration開発時に蓄積した行動範囲の問題へ対応するため
+- プラグイン名: `evidence-first` から `ikifuse-ai-toolkit` へ変更
+- バージョン: `0.1.1` から `0.2.0` へ変更
+- 維持したもの: `evidence-audit` の調査・証拠分類・削除安全性の手順
+- 追加したもの: `action-check` の相談／実装境界、変更範囲、重要な曖昧さ、完成済み範囲、任意改善、作成物報告の手順
+- 設計根拠: https://github.com/ikifuse/ikifuse-custom-toolset/issues/1

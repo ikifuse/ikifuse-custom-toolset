@@ -25,10 +25,10 @@ OpenAI・Codex用/
 
 各Codex用プラグインの中に置く、そのプラグイン自身の定義ファイルです。
 
-Evidence Firstでは、次の場所にあります。
+ikifuse AI Toolkitでは、次の場所にあります。
 
 ```text
-OpenAI・Codex用/プラグイン/evidence-first/.codex-plugin/plugin.json
+OpenAI・Codex用/プラグイン/ikifuse-ai-toolkit/.codex-plugin/plugin.json
 ```
 
 Codex用プラグインを追加した場合は、必要に応じてルートの`.agents/plugins/marketplace.json`へ登録します。具体的な導入・更新・取り外し方法は、各プラグインのREADMEで確認します。

@@ -1,0 +1,26 @@
+{
+  "name": "ikifuse-ai-toolkit",
+  "version": "0.2.0",
+  "description": "証拠に基づく調査と、合意した行動範囲を守るためのCodex用ツールキット。",
+  "author": {
+    "name": "ikifuse"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ikifuse AI Toolkit",
+    "shortDescription": "証拠を確認し、合意した範囲だけで安全に作業します。",
+    "longDescription": "Evidence Auditで判断に必要な証拠を確認し、Action Checkで相談・調査・実装・削除・公開の境界を維持します。重要な曖昧さでは停止し、作業後は変更範囲と作成物を適切な長さで報告します。",
+    "developerName": "ikifuse",
+    "category": "Productivity",
+    "capabilities": [
+      "証拠に基づく調査",
+      "許可された行動範囲の管理",
+      "変更・作成物の報告"
+    ],
+    "defaultPrompt": [
+      "必要な証拠を確認し、事実・推論・矛盾・未確認事項を分けて報告してください。",
+      "合意済みの範囲だけで作業し、変更内容と未変更範囲を報告してください。",
+      "安全性を確認し、問題がなければ指定された操作を実行してください。"
+    ]
+  }
+}

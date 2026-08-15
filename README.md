@@ -21,7 +21,7 @@ AI協働開発で繰り返し使うプラグイン、スキル、ルーティン
 
 | 名前 | 対象 | 種類 | 役割 |
 |---|---|---|---|
-| [Evidence First](OpenAI・Codex用/プラグイン/evidence-first/README.md) | OpenAI・Codex | プラグイン | 結論に必要な証拠を調べ、確認済み事実・推論・矛盾・未確認事項を分けて報告する |
+| [ikifuse AI Toolkit](OpenAI・Codex用/プラグイン/ikifuse-ai-toolkit/README.md) | OpenAI・Codex | プラグイン | 必要な証拠を調べ、合意した行動範囲を守って作業・報告する |
 
 ## 全体構成
 
