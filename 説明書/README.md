@@ -31,4 +31,4 @@ ikifuse Custom Toolsetの詳しい使い方や管理方法をまとめていま�
 | 過去の事例 | 問題、調査、判断、結果を後から再利用できる形で残した記録 |
 | 専用の設定 | CodexやAntigravityなど、特定の環境だけで使う設定 |
 
-一つのプラグインの中に、複数のスキルや設定が含まれることがあります。たとえばikifuse AI Toolkitには、`evidence-audit`と`action-check`の2つのスキルが入っています。
+一つのプラグインの中に、複数のスキルや設定が含まれることがあります。たとえばikifuse AI Toolkitには、`evidence-audit`、`action-check`、`secret-privacy-guard`の3つのスキルが入っています。

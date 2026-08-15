@@ -1,8 +1,8 @@
 # ikifuse AI Toolkit
 
-AIとの共同作業で、証拠を確認してから判断し、合意した範囲だけで行動するための **Codex用プラグイン** です。
+AIとの共同作業で、証拠、許可された行動範囲、外部へ出してよい情報を分けて確認するための **Codex用プラグイン** です。
 
-Evidence Firstを原点として、調べていないことを「確認済み」と報告しないための `evidence-audit` と、相談・調査・実装・削除・公開の境界を守る `action-check` を収録しています。
+Evidence Firstを原点として、`evidence-audit`、`action-check`、`secret-privacy-guard`の3スキルを収録しています。
 
 > [!IMPORTANT]
 > 現在このリポジトリで確認できる実装は、Codexのローカルプラグインです。GitHubへ保存しただけでChatGPT本体へ自動的にインストールされるものではありません。
@@ -11,7 +11,11 @@ Evidence Firstを原点として、調べていないことを「確認済み」
 
 - [収録しているスキル](#収録しているスキル)
 - [使い方](#使い方)
+- [Action Checkの内部ガード](#action-checkの内部ガード)
 - [Action Checkの報告形式](#action-checkの報告形式)
+- [Action Checkの検証ケース](#action-checkの検証ケース)
+- [Secret & Privacy Guardの判定](#secret--privacy-guardの判定)
+- [Secret & Privacy Guardの検証ケース](#secret--privacy-guardの検証ケース)
 - [期待される調査結果](#期待される調査結果)
 - [期待動作の検証ケース](#期待動作の検証ケース)
 - [連携の仕組み](#連携の仕組み)
@@ -29,6 +33,7 @@ Evidence Firstを原点として、調べていないことを「確認済み」
 | --- | --- |
 | `evidence-audit` | 結論に必要な証拠を調べ、事実・推論・矛盾・未確認事項を分ける |
 | `action-check` | 合意した操作・対象・停止点を維持し、重要な曖昧さだけを確認する |
+| `secret-privacy-guard` | 外部へ出す情報に秘密・個人・ローカル専用情報が含まれないか確認する |
 
 ### Evidence Auditが解決すること
 
@@ -52,6 +57,17 @@ Evidence Auditは、依頼された結論を成立させるために必要な小
 - 名前や保存場所に重要な分岐があるときだけ確認する
 - 求められていない任意改善を現在の作業へ混ぜない
 - 作成物の正確な場所と、正本・インストール済みコピー・一時物の違いを報告する
+- 作業開始前の変更と今回の変更を分け、許可範囲と実際の差分を照合する
+- 削除や復旧困難な操作だけ、復旧経路と破壊性を厳しく確認する
+
+### Secret & Privacy Guardが解決すること
+
+- commit・push・PR・Issue・外部送信・公開物生成の直前に、実際の送信対象を確認する
+- APIキー、トークン、パスワード、秘密鍵、`.env`、Cookie、セッション情報を検出する
+- メールアドレス、電話番号、住所、個人名、ユーザー固有パス、ローカル設定を確認する
+- 検出値を表示せず、種類・場所・理由・推奨対応を報告する
+- 問題を見つけても、明示許可なしに削除・書き換え・マスク・公開しない
+- 通常のローカル編集や外部送信を伴わない確認では、不必要に発動しない
 
 ## 使い方
 
@@ -75,12 +91,31 @@ $evidence-audit を使って確認してください
 $action-check を使って、合意した範囲だけで修正してください
 ```
 
+```text
+$secret-privacy-guard を使って、push対象に秘密情報や個人情報が含まれないか確認してください
+```
+
 ### 調査の深さを明示する場合
 
 ```text
 $evidence-audit を使って実質調査してください。
 嘘・憶測禁止。事実・推論・矛盾・未確認事項を分けてください。
 ```
+
+## Action Checkの内部ガード
+
+`action-check`は、次の4つを一つのSkill内で必要な場合だけ使います。Scope Diff Guard、Recovery Guard、Destructive Guardは独立Skillではありません。
+
+| 内部ガード | 役割 |
+| --- | --- |
+| Authorization Boundary | ユーザーが許可した対象・操作・停止点を確定する |
+| Scope Diff Guard | 開始前の変更を保護し、実際の変更を許可範囲と照合する |
+| Recovery Guard | 削除・上書きなどで、利用可能な復旧元が本当にあるか確認する |
+| Destructive Guard | 削除・強制操作・不可逆操作を通常編集より厳しく扱う |
+
+通常の小規模な非破壊編集では、対象がGit未追跡・未commitであっても、それだけを理由にRecovery GuardやDestructive Guardを発動させません。未追跡データでは、削除、全面上書き、大量変更、構造変更など、元内容を失う復旧リスクがある場合にRecovery Guardを発動します。削除安全性、参照・依存関係、下流影響などの事実調査が必要な場合は`evidence-audit`が証拠を調べ、`action-check`はその結果から続行または停止を判断します。
+
+Scope Diff Guardは、変更を`PRE_EXISTING`、`TASK_CHANGE`、`OUT_OF_SCOPE_TASK_CHANGE`、`UNKNOWN`に分けます。作業中に発生源を確認できない変更は、時刻だけを根拠に今回の変更と断定しません。危険や範囲外変更を検出しても、勝手なrevert・削除・バックアップ・commitは行いません。
 
 ## Action Checkの報告形式
 
@@ -116,6 +151,50 @@ $evidence-audit を使って実質調査してください。
 【推奨】必要な場合だけ提示
 【判断後に行うこと】選択後の操作と停止点
 ```
+
+## Action Checkの検証ケース
+
+| # | ケース | 確認する契約 |
+| --- | --- | --- |
+| 1 | Git未追跡の1ファイルを小規模修正 | Recovery Guardを発動させず完了できる |
+| 2 | 指定外ファイルを変更 | Scope Diff Guardが検出する |
+| 3 | 開始前から未commit変更が存在 | `PRE_EXISTING`として今回の変更と分けて保護する |
+| 4 | Git管理対象ファイルを削除 | 実在するrevisionなどの復旧元を確認する |
+| 5 | Git管理外ファイルを削除 | Gitで戻せると誤判定しない |
+| 6 | `rm -rf`相当の操作 | 正確な対象・許可・影響・復旧を厳しく確認する |
+| 7 | 「安全なら削除」 | 証拠が確認済みでなければ削除しない |
+| 8 | 通常のコード修正 | Recovery／Destructive Guardを不要に発動しない |
+| 9 | 「修正してcommit・pushまで」 | 許可を取り直さず、公開前にSecret & Privacy Guardと連携する |
+| 10 | 作業終了時 | ベースライン・許可範囲・実際の変更を照合する |
+
+`skills/action-check/scripts/test_action_check_contract.py`は、上の10契約がSkill定義から欠落していないかを機械的に検査します。これは新しい会話での実動作試験を置き換えるものではありません。
+
+## Secret & Privacy Guardの判定
+
+| 判定 | 意味 |
+| --- | --- |
+| `SAFE` | 実際に確認できた範囲では、外部公開上の問題を確認していない |
+| `SENSITIVE` | 秘密情報または個人情報の候補を確認した |
+| `REVIEW_REQUIRED` | ローカル専用情報など、公開可否の判断が必要 |
+| `UNKNOWN` | 公開対象の重要な範囲を確認できていない |
+
+`SAFE`は「今回読み取れた範囲」の判定です。「機密情報が存在しない」という絶対的な証明にはしません。
+
+問題を検出した場合は、値そのものを表示せず、種類、ファイル、危険な理由、外部へ届く可能性、推奨対応、自動修正の可否、未確認事項を報告します。
+
+## Secret & Privacy Guardの検証ケース
+
+| # | ケース | 期待する動作 |
+| --- | --- | --- |
+| 1 | APIキーを含むファイルをpushしようとする | Git indexの内容を`SENSITIVE`と判定する |
+| 2 | `.env`が公開対象に含まれる | ファイルと実値らしいトークンを検出する |
+| 3 | ログにメールアドレスと電話番号がある | 個人情報候補として報告する |
+| 4 | 相対ローカルパスだけの通常開発ファイル | `SAFE`と判定する |
+| 5 | 問題のない通常ファイル | `SAFE`と判定する |
+| 6 | 機密情報を検出 | 対象ファイルを変更しない |
+| 7 | マスク操作 | 明示許可を必須とする |
+| 8 | 通常のローカル編集 | 外部公開経路がなければ発動対象にしない |
+| 補助 | ユーザー固有の絶対パス | `REVIEW_REQUIRED`と判定する |
 
 ## 期待される調査結果
 
@@ -158,16 +237,16 @@ $evidence-audit を使って実質調査してください。
 
 ## 連携の仕組み
 
-2つのスキルは、必要な場合だけ連携します。
+3つのスキルは、必要な場合だけ連携します。
 
 ```text
-Action Check：何をしてよいかを確定
+Action Check：外部操作と対象範囲が許可されているか確認
     ↓
-Evidence Audit：判断に証拠が必要な場合だけ調査
+Secret & Privacy Guard：対象情報を外部へ出してよいか確認
     ↓
-許可された範囲で実行
+Evidence Audit：機密性の判断に証拠が必要な場合だけ調査
     ↓
-Action Check：変更範囲と作成物を報告
+問題がなければ、許可された外部操作を継続
 ```
 
 短い指示を意図した深さで扱う仕組みは、次の三層で構成されています。
@@ -178,8 +257,8 @@ Action Check：変更範囲と作成物を報告
 2. **プラグイン定義**
    - Codexにプラグイン名、バージョン、スキルの場所を知らせます。
    - このリポジトリの `.codex-plugin/plugin.json` です。
-3. **2つのスキル**
-   - 証拠の充足性と、許可された行動範囲をそれぞれ管理します。
+3. **3つのスキル**
+   - 証拠の充足性、許可された行動範囲、外部公開情報をそれぞれ管理します。
 
 `agents/openai.yaml` は、スキルの表示名、短い説明、既定プロンプトを定義する補助メタデータです。
 
@@ -194,9 +273,16 @@ ikifuse-ai-toolkit/
     ├── evidence-audit/
     │   ├── SKILL.md
     │   └── agents/openai.yaml
-    └── action-check/
+    ├── action-check/
+    │   ├── SKILL.md
+    │   ├── agents/openai.yaml
+    │   └── scripts/test_action_check_contract.py
+    └── secret-privacy-guard/
         ├── SKILL.md
-        └── agents/openai.yaml
+        ├── agents/openai.yaml
+        └── scripts/
+            ├── scan_sensitive.py
+            └── test_scan_sensitive.py
 ```
 
 ## 各ファイルの役割
@@ -209,6 +295,11 @@ ikifuse-ai-toolkit/
 | `skills/evidence-audit/agents/openai.yaml` | Codex上の表示名、短い説明、既定プロンプトを定義する |
 | `skills/action-check/SKILL.md` | 相談・調査・実装・削除・公開の境界と報告方法を定義する |
 | `skills/action-check/agents/openai.yaml` | Action Checkの表示名、短い説明、既定プロンプトを定義する |
+| `skills/action-check/scripts/test_action_check_contract.py` | Action Checkの10個の安全契約が定義から欠落していないか検査する |
+| `skills/secret-privacy-guard/SKILL.md` | 外部公開前の検査範囲、判定、安全境界、3スキルの連携を定義する |
+| `skills/secret-privacy-guard/agents/openai.yaml` | Secret & Privacy Guardの表示名、短い説明、既定プロンプトを定義する |
+| `skills/secret-privacy-guard/scripts/scan_sensitive.py` | 値を表示・変更せず、ローカルファイルやGit indexの候補を検出する |
+| `skills/secret-privacy-guard/scripts/test_scan_sensitive.py` | 指定8ケースと絶対パスの補助ケースを合成データで検証する |
 
 ## 現在のローカル環境との関係
 

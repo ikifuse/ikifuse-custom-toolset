@@ -28,3 +28,11 @@
 - 維持したもの: `evidence-audit` の調査・証拠分類・削除安全性の手順
 - 追加したもの: `action-check` の相談／実装境界、変更範囲、重要な曖昧さ、完成済み範囲、任意改善、作成物報告の手順
 - 設計根拠: https://github.com/ikifuse/ikifuse-custom-toolset/issues/1
+
+## Secret & Privacy Guardの追加
+
+- 変更理由: GitHubや外部サービスへ、秘密情報・個人情報・ローカル専用情報が意図せず流出することを防ぐため
+- バージョン: `0.2.0` から `0.3.0` へ変更
+- 追加したもの: `secret-privacy-guard` の外部公開前検査、4段階判定、検出後の停止報告、明示許可なしの修正禁止
+- 補助機能: 検出値を表示・変更しない読み取り専用スキャナーと、合成データによる指定8ケース＋絶対パス補助ケースのテスト
+- 責務分離: 証拠は`evidence-audit`、操作許可は`action-check`、外部公開情報は`secret-privacy-guard`が担当

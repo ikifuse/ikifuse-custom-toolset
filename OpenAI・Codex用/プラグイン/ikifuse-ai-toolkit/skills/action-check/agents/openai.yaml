@@ -1,4 +1,4 @@
 interface:
   display_name: "Action Check"
-  short_description: "依頼された行動範囲を守り、重要な曖昧さだけを確認する"
-  default_prompt: "$action-check を使って、合意済みの範囲だけで作業し、変更内容と未変更範囲を報告してください。"
+  short_description: "許可範囲・実変更・復旧・破壊操作を必要時だけ確認する"
+  default_prompt: "$action-check を使って、開始前の変更を保護し、許可範囲内だけで作業して実際の変更範囲を照合してください。"

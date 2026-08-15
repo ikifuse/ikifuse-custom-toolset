@@ -1,11 +1,20 @@
 ---
 name: action-check
-description: Establish and preserve the actions authorized by the user, project rules, and the latest agreement. Use for consultation versus implementation, requests such as “進めてください”, creation or naming with material ambiguity, edits limited to specific files, completed or frozen areas, deletion, installation, Git operations, publishing, out-of-scope findings, or reporting the exact location and role of created artifacts. Do not use it to invent extra approval steps when the requested scope is already clear.
+description: Establish and preserve the actions authorized by the user, then verify that actual changes stayed inside that boundary. Use for consultation versus implementation, requests such as “進めてください”, scoped edits, completed or frozen areas, deletion, overwrite, bulk or hard-to-recover changes, installation, Git operations, publishing, out-of-scope findings, or reporting created artifacts. Apply scope-diff, recovery, and destructive safeguards only when their risks are present; do not invent approval steps for ordinary clear edits.
 ---
 
 # Action Check
 
 Keep the work inside the boundary established by the user's request, applicable project instructions, and the latest explicit agreement. Do not reopen an agreed decision unless the user changes it or inspected evidence shows that the authorized result cannot be completed safely.
+
+Use four internal safeguards as parts of this skill, not as separate skills:
+
+- **Authorization Boundary:** determine what may be done.
+- **Scope Diff Guard:** distinguish the starting state from this task and reconcile actual changes with the authorized scope.
+- **Recovery Guard:** when failure would be costly, determine whether the affected state can actually be restored.
+- **Destructive Guard:** apply stricter gates to deletion, irreversible changes, and operations with substantial loss potential.
+
+Select only the safeguards required by the operation. Ordinary, clearly authorized, non-destructive edits should remain lightweight.
 
 ## Establish the current boundary
 
@@ -18,6 +27,25 @@ Before acting, identify:
 - whether a material choice remains unresolved.
 
 State this boundary to the user when the work is broad, risky, or easy to misread. For a simple unambiguous edit, proceed without producing a ceremonial checklist.
+
+## Record the starting state
+
+Before modifying files, capture enough baseline evidence to separate pre-existing work from task changes. In a Git worktree, normally inspect the relevant parts of:
+
+- working-tree, index, and untracked status;
+- changed paths and, when attribution matters, their relevant diffs or fingerprints;
+- the authorized targets, explicit exclusions, and frozen areas.
+
+Limit the baseline to the scope needed for reliable attribution. Do not read unrelated sensitive content merely to create a baseline. Treat recorded pre-existing changes as protected user work: do not edit, stage, revert, delete, or claim them as task output unless the user explicitly includes them.
+
+A path that first appears changed during the task is not by itself proof that this agent caused it. Combine the baseline with the operations actually performed. Classify a material change as:
+
+- `PRE_EXISTING`: present at the baseline and not changed by this task;
+- `TASK_CHANGE`: produced by an authorized operation in this task;
+- `OUT_OF_SCOPE_TASK_CHANGE`: attributable to this task but outside its authorization;
+- `UNKNOWN`: its source cannot be established, including possible concurrent user or tool changes.
+
+Never convert `UNKNOWN` into `TASK_CHANGE` merely because of timing.
 
 ## Preserve operation boundaries
 
@@ -54,18 +82,62 @@ Create temporary artifacts without another question only inside the authorized w
 
 ## Use evidence when the action depends on a claim
 
-Invoke an available evidence-audit workflow when an action depends on a factual conclusion, such as deletion safety, provenance, current official behavior, or whether a generated artifact matches its source.
+Invoke an available `evidence-audit` workflow when an action depends on a factual conclusion, such as deletion safety, provenance, references and dependencies, downstream effects, current official behavior, or whether a generated artifact matches its source. Let that workflow collect and grade the evidence; Action Check uses the result to decide whether the authorized operation may continue and does not duplicate the investigation.
 
 For conditional deletion such as “delete it if safe,” delete only when the required safety conclusion is confirmed. Do not delete when the conclusion is partial, conflicted, or unknown.
 
+## Apply Recovery Guard only when needed
+
+Use Recovery Guard before deletion, destructive or complete overwrite, bulk replacement, structural change, irreversible transformation, or another operation whose recovery cost is material. For untracked or uncommitted-only data, treat Git state as a risk multiplier only when the planned operation could materially lose the original content or make it costly to reconstruct; untracked status alone is not a trigger. Do not activate Recovery Guard for a small, bounded, non-destructive edit with a clear inverse change merely because the target is untracked or uncommitted. Skip it for ordinary small edits that have a clear validation and correction path.
+
+Determine, as relevant:
+
+- whether each target is tracked, untracked, ignored, staged, modified, or committed;
+- which exact revision, backup, or separate copy could restore it;
+- whether uncommitted or untracked information would be lost;
+- whether the proposed restoration procedure is actually available and sufficient.
+
+Do not equate “inside a Git repository” with “recoverable.” A committed tracked version may be recoverable from an identified revision; untracked content and uncommitted portions are not recoverable from Git unless an inspected source contains them.
+
+If recovery matters and no viable route is established, report that gap and stop before the risky operation. Do not create a backup, copy, commit, stash, or restore point unless that operation is already authorized or the owner approves it.
+
+## Apply Destructive Guard to loss-capable operations
+
+Treat file or directory deletion, `rm` or `rm -rf`, forced overwrite, `git reset --hard`, `git clean`, force push, history rewriting, bulk replacement, lossy transformation, and comparable operations more strictly than normal editing.
+
+Before proceeding, require:
+
+1. an exact, resolved target and complete intended scope;
+2. authorization for the destructive operation itself, not merely for inspection or editing;
+3. sufficient evidence about references, dependencies, downstream effects, and remaining unknowns when those facts affect safety;
+4. a Recovery Guard result appropriate to the potential loss;
+5. no material conflict between the requested outcome and project rules.
+
+Do not use unresolved variables, broad roots, or ambiguous globs as destructive targets. Resolve and inspect the exact target first. If the operation is conditional on safety, stop when evidence is partial, conflicted, unknown, or when target, authorization, impact, or recovery remains materially unclear.
+
+Detecting danger does not authorize remediation. Do not automatically delete, revert, rewrite, mask, back up, commit, or otherwise alter state. Report the issue and the bounded next action that would require permission.
+
+## Coordinate external disclosure without merging responsibilities
+
+For commit, push, pull request, issue, publication, or another external disclosure:
+
+- let Action Check determine whether the operation and its change scope are authorized;
+- let `secret-privacy-guard` determine whether the exact outbound information may leave the local boundary;
+- use `evidence-audit` only for material factual questions requiring more evidence.
+
+Authorization does not imply disclosure safety, and a privacy result does not authorize the operation.
+
 ## Execute and verify the authorized scope
 
-1. Inspect the starting state needed to distinguish existing changes from this task.
-2. Modify only the authorized targets.
-3. Run validation proportional to the risk.
-4. Compare the final changed paths with the authorized scope.
-5. Do not stage unrelated files or use broad staging that would mix other work into the task.
-6. Before an explicitly requested commit or push, require an unambiguous repository, branch, and change scope; successful required checks; and no unresolved conflict or unrelated staged change.
+1. Establish the Authorization Boundary and record the relevant starting-state baseline.
+2. Select Recovery Guard or Destructive Guard only if the planned operation warrants it.
+3. Modify only the authorized targets and keep a record of operations actually performed.
+4. Run validation proportional to the risk.
+5. Reinspect actual working-tree and index changes and compare them with both the baseline and authorized scope.
+6. Classify material paths as `PRE_EXISTING`, `TASK_CHANGE`, `OUT_OF_SCOPE_TASK_CHANGE`, or `UNKNOWN`.
+7. Do not automatically revert or delete an out-of-scope or unknown change. If an attributable out-of-scope change affects correctness or safety, do not report the work as complete; report its path and impact.
+8. Do not stage unrelated files or use broad staging that would mix other work into the task.
+9. Before an explicitly requested commit or push, require an unambiguous repository, branch, and change scope; successful required checks; no unresolved conflict or unrelated staged change; and the applicable `secret-privacy-guard` result. Do not ask again for the already explicit commit or push permission.
 
 ## Report in proportion to the work
 
@@ -78,6 +150,7 @@ For creation, relocation, or important changes, report:
 - exact path or external location;
 - whether it is the editable canonical source, installed copy, generated output, or temporary artifact;
 - what remained unchanged;
+- the final scope comparison, including any protected pre-existing, out-of-scope, or `UNKNOWN` change that matters;
 - validation results and remaining unknowns;
 - the next action required from the owner, or that none is required.
 

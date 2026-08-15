@@ -21,7 +21,7 @@ AI協働開発で繰り返し使うプラグイン、スキル、ルーティン
 
 | 名前 | 対象 | 種類 | 役割 |
 |---|---|---|---|
-| [ikifuse AI Toolkit](OpenAI・Codex用/プラグイン/ikifuse-ai-toolkit/README.md) | OpenAI・Codex | プラグイン | 必要な証拠を調べ、合意した行動範囲を守って作業・報告する |
+| [ikifuse AI Toolkit](OpenAI・Codex用/プラグイン/ikifuse-ai-toolkit/README.md) | OpenAI・Codex | プラグイン | 必要な証拠、許可された行動範囲、外部公開情報を分けて確認する |
 
 ## 全体構成
 
