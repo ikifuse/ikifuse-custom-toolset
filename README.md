@@ -20,7 +20,7 @@ AI協働開発で繰り返し使うプラグイン、スキル、ルーティン
 ## 現在入っている道具
 
 | 名前 | 対象 | 種類 | 役割 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | [ikifuse AI Toolkit](OpenAI・Codex用/プラグイン/ikifuse-ai-toolkit/README.md) | OpenAI・Codex | プラグイン | 必要な証拠、許可された行動範囲、外部公開情報を分けて確認する |
 | [ikifuse AI Toolkit](Google・Antigravity用/スキル/ikifuse-ai-toolkit/README.md) | Google・Antigravity | Skill | 必要な証拠、許可された行動範囲、外部公開情報を分けて確認する |
 
@@ -38,7 +38,7 @@ ikifuse-custom-toolset/
 ```
 
 | 場所 | 内容 |
-|---|---|
+| --- | --- |
 | [説明書](説明書/) | 使い方、管理方法、よくある質問、個人・チームでの活用 |
 | [共通](共通/) | 特定のAI環境だけに依存しないルーティン、テンプレート、判断基準、過去の事例 |
 | [OpenAI・Codex用](OpenAI・Codex用/) | Codexで使うプラグイン、単体スキル、専用設定 |

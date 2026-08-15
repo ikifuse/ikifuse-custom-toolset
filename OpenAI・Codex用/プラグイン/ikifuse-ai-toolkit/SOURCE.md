@@ -1,6 +1,6 @@
 # 取り込み元と履歴
 
-- 取り込み元: https://github.com/ikifuse/evidence-first
+- 取り込み元: <https://github.com/ikifuse/evidence-first>
 - 取り込み日: 2026-08-14
 - 取り込み時点のブランチ: main
 - 取り込み時点の最新コミット: 3614b5bc074237c3a6cfeeae080398ade8279b44
@@ -27,7 +27,7 @@
 - バージョン: `0.1.1` から `0.2.0` へ変更
 - 維持したもの: `evidence-audit` の調査・証拠分類・削除安全性の手順
 - 追加したもの: `action-check` の相談／実装境界、変更範囲、重要な曖昧さ、完成済み範囲、任意改善、作成物報告の手順
-- 設計根拠: https://github.com/ikifuse/ikifuse-custom-toolset/issues/1
+- 設計根拠: <https://github.com/ikifuse/ikifuse-custom-toolset/issues/1>
 
 ## Secret & Privacy Guardの追加
 
